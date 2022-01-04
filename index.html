@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>Deb404 - Weather App</title>
+    <!-- MDB icon -->
+    <link rel="icon" href="img/mdb-favicon.ico" type="image/x-icon" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" />
+    <!-- Google Fonts Roboto -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap"
+    />
+    <!-- MDB -->
+    <link rel="stylesheet" href="css/mdb.min.css" />
+  </head>
+  <body>
+    <!-- Start your project here-->
+    <header class="jumbotron-fluid">
+      <h1 class="display-12">
+          <i class="fas fa-cloud-sun-rain"></i>
+    <div class="page-header">
+      <h1>Weather Dashboard</h1>
+  </div>
+  <div class="row">
+      <div class="col-md-4">
+          <div class="card">
+              <div class="card-body">
+                  <h1>Search for City:</h1>
+                  <form class="form-inline">
+                      <input type="text" class="form-control mb-2 mr-sm-2" id="search-text">
+                      <button type="submit" class="btn search-btn btn-primary mb-2">Search</button>
+                  </form>
+                  <ul class="search-list"></ul>
+              </div>
+          </div>
+      </div>
+      <div class="col-md-8">
+          <div class="row">
+              <div class="card">
+                  <div class="card-body">
+                      <h1 class="city"></h1>
+                      <div class="temp"></div>
+                      <div class="humidity"></div>
+                      <div class="wind"></div>
+                      <div class="uvIndex"></div>
+                  </div>
+
+                  <div class="container"></div>
+
+                  <h1 class="five-day-forecast"></h1>
+                  <div class="row" id="forecast">
+
+                  </div>
+
+
+              </div>
+
+          </div>
+      </div>
+
+  </div>
+  </div>
+
+
+
+
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.0/moment.min.js" integrity="sha512-Izh34nqeeR7/nwthfeE0SI3c8uhFSnqxV0sI9TvTcXiFJkMd6fB644O64BRq2P/LA/+7eRvCw4GmLsXksyTHBg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/open-weather/2.0.0/openweather.min.js" integrity="sha512-mlRoH3bU+q4t5clJkMwltJcka6JyNWsUJybBclHUiU0Bdux6LtcNqO8XMNi9/vp4+KCteAbc0hYnHU4Rh2SH+g==" crossorigin="anonymous"></script>
+  <script src="./script.js"></script>
+
+
+  <!-- key: c1565e11c00b98bff124e198725a5db7 -->
+</body>
+    <!-- End your project here-->
+
+    <!-- MDB -->
+    <script type="text/javascript" src="js/mdb.min.js"></script>
+    <!-- Custom scripts -->
+    <script type="text/javascript">
+   
+
+    
+        var searchInput = $("#search-text");
+var displayEl = $(".search-list");
+var searchText = "";
+var uvEl = $(".uvIndex");
+
+var btn = $(".search-btn");
+var cities = [];
+var header = $(".forecast-header");
+var forecastEl = $(".five-day-forecast");
+var forecastRow = $("#forecast");
+
+
+function displaySearchCity() {
+
+    searchText = searchInput.val();
+    cities.push(searchText);
+}
+
+
+// on click event to get city 
+function getUvIndex(lat, lon) {
+    var queryUrl = "https://api.openweathermap.org/data/2.5/uvi?lat="+lat+"&lon="+lon+"&appid=c1565e11c00b98bff124e198725a5db7";
+    $.ajax({
+        url: queryUrl,
+        method: "GET"
+    }).then(function (response) {
+        uvEl.text("UV Index: " + response.value);
+        // uv mild 
+        if (response.value <= 2) {
+            uvEl.css("background-color", "#ffef00");
+
+        }
+        else if (response.value >= 4) {
+            // uv moderate
+            uvEl.css("background-color", "#ff9f00");
+        }
+        else {
+            // uv severe
+            uvEl.css("background-color", "#dc143c");
+        }
+    });
+}
+function cityHistoryDisplay(newCity) {
+    console.log(newCity);
+    for (var i = 0; i < cities.length; i++) {
+        // if statement
+        var currentCity = newCity || cities[i];
+        if (!newCity){
+            var cityListBtn = $("<button>").text(currentCity);
+            cityListBtn.addClass("city-button btn btn-lg btn-block btn-outline-dark");
+            displayEl.append(cityListBtn);
+            localStorage.setItem("cities", cities);
+        }
+        
+
+
+    }
+
+    var queryUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + currentCity + "&appid=c1565e11c00b98bff124e198725a5db7&units=imperial";
+    $.ajax({
+        url: queryUrl,
+        method: "GET"
+    }).then(function (response) {
+        getUvIndex(response.coord.lat, response.coord.lon);
+        var cityDiv = $(".city");
+        // show city, date, and weather icon 
+        var date = moment(response.dt_txt).format("ll")
+        var weatherEl = $("<img>");
+        var weatherIcon = response.weather[0].icon;
+        console.log(weatherEl);
+        weatherEl.attr("src", "http://openweathermap.org/img/w/" + weatherIcon + ".png");
+        cityDiv.html(" Weather Details: " + response.name + " " + date + " " + weatherEl.prop('outerHTML'));
+
+        $(".humidity").text("Humidity: " + response.main.humidity + " %");
+        $(".temp").text("Temperature: " + response.main.temp + " ℉");
+        $(".wind").text("Wind Speed: " + response.wind.speed + " MPH")
+
+
+    });
+
+    var fiveDayQueryUrl = "https://api.openweathermap.org/data/2.5/forecast?q=" + currentCity + "&appid=c1565e11c00b98bff124e198725a5db7&units=imperial";
+    $.ajax({
+        url: fiveDayQueryUrl,
+        method: "GET"
+    }).then(function (response) {
+        //    gets 5 day current weather
+        forecastEl.text(" 5-Day Forecast");
+        var fiveDay = [];
+        var current = {};
+
+        for (var i = 0; i < response.list.length; i++) {
+            if (i % 8 === 0) {
+                current = response.list[i];
+                var date = $("<div>");
+                var body = $("<div class ='card-body'>");
+                var currentIcon = current.weather[0].icon;
+                var temp = $("<div>");
+                var icon = $("<img>");
+                var humidity = $("<div>");
+                var forecastDay = $("<div class = 'col'>");
+                var card = $("<div class = 'card bg-primary text-white'>");
+
+                $("#forecast").append(forecastDay);
+                forecastDay.append(card);
+                card.append(body);
+
+                console.log(current);
+                body.append(date);
+                body.append(temp);
+                temp.text(current.main.temp + " ℉");
+                body.append(icon);
+                icon.attr("src", "http://openweathermap.org/img/w/" + currentIcon + ".png");
+                body.append(humidity);
+                humidity.text(current.main.humidity + "%");
+                date.text(moment(current.dt_txt).format("ll"));
+
+            }
+
+        };
+       
+
+    });
+}
+
+btn.on("click", function (event) {
+    displayEl.empty();
+    forecastRow.empty();
+    event.preventDefault();
+    displaySearchCity();
+    searchInput.val("");
+    cityHistoryDisplay();
+});
+// when I click the city it history it pulls up current stats
+$('body').on('click', function (event) {
+    // if event target has class city button
+    if ($(event.target).hasClass("city-button")){
+        forecastRow.empty();
+        event.preventDefault();
+        cityHistoryDisplay($(event.target).text());
+
+    }
+});
+   
+
+
+    </script>
+  </body>
+</html>
